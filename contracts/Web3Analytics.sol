@@ -92,7 +92,7 @@ contract Web3Analytics is Ownable {
 
     function registerApp() public {
         require(!registeredApps.contains(msg.sender), "App already registered");
-        
+
         registeredApps.add(msg.sender);
     }
 
