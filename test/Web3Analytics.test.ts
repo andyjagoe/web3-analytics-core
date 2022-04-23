@@ -67,5 +67,24 @@ describe("Web3Analytics", function () {
 
   });
 
+  it("Return correct count of apps and app users", async function () {
+    // Check count for apps
+    expect(await web3Analytics.getAppCount()).to.equal(0);
+    await web3Analytics.connect(addr1).registerApp();
+    await web3Analytics.connect(addr2).registerApp();
+    await web3Analytics.connect(addr3).registerApp();
+    expect(await web3Analytics.getAppCount()).to.equal(3);
+
+    // Check count for users (we re-use did b/c it's verified off chain by indexer)
+    const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU'
+    expect(await web3Analytics.getUserCount(addr2.address)).to.equal(0);
+    await web3Analytics.connect(addr4).addUser(did, addr2.address);
+    await web3Analytics.connect(addr5).addUser(did, addr2.address);
+    await web3Analytics.connect(addr6).addUser(did, addr2.address);
+    await web3Analytics.connect(addr7).addUser(did, addr2.address);
+    await web3Analytics.connect(addr8).addUser(did, addr2.address);
+    expect(await web3Analytics.getUserCount(addr2.address)).to.equal(5);
+
+  });
 
 });

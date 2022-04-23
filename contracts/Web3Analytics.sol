@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -17,7 +16,7 @@ contract Web3Analytics is Ownable {
         string userDid;
     }
 
-    mapping(address => bool) private registeredApps;
+    EnumerableSet.AddressSet private registeredApps;
     mapping(address => Registration[]) private appRegistrations;
     mapping(address => EnumerableSet.AddressSet) private appUsers;
 
@@ -29,6 +28,16 @@ contract Web3Analytics is Ownable {
 
     function getUsers(address app) public view returns(address[] memory) {
         return appUsers[app].values();
+    }
+
+
+    /**
+    * @dev provides a count of an app's users
+    * @param app the application to retrieve users for
+    **/
+
+    function getUserCount(address app) public view returns(uint256) {
+        return appUsers[app].length();
     }
 
 
@@ -48,7 +57,16 @@ contract Web3Analytics is Ownable {
     **/
 
     function isAppRegistered(address app) public view onlyOwner returns(bool) {
-        return registeredApps[app];
+        return registeredApps.contains(app);
+    }
+
+
+    /**
+    * @dev provides a count of apps registered
+    **/
+
+    function getAppCount() public view returns(uint256) {
+        return registeredApps.length();
     }
 
 
@@ -58,8 +76,8 @@ contract Web3Analytics is Ownable {
     **/
 
     function addUser(string memory did, address app) public {
-        // app address must be registered and user must not exist for app
-        require(registeredApps[app], "App not registered");
+        // app must be registered and user must not exist for app
+        require(registeredApps.contains(app), "App not registered");
         require(!appUsers[app].contains(msg.sender), "User already exists");
 
         appUsers[app].add(msg.sender);
@@ -72,7 +90,8 @@ contract Web3Analytics is Ownable {
     **/
 
     function registerApp() public {
-        registeredApps[msg.sender] = true;
+        require(!registeredApps.contains(msg.sender), "App already registered");
+        registeredApps.add(msg.sender);
     }
 
 }
