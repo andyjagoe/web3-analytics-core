@@ -73,6 +73,7 @@ contract Web3Analytics is Ownable {
     /**
     * @dev adds a new user to an app
     * @param did the did key for the user to add
+    * @param app the address of the app to register user for
     **/
 
     function addUser(string memory did, address app) public {
@@ -91,6 +92,7 @@ contract Web3Analytics is Ownable {
 
     function registerApp() public {
         require(!registeredApps.contains(msg.sender), "App already registered");
+        
         registeredApps.add(msg.sender);
     }
 
