@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 
 
-contract Web3Analytics is Ownable {
+contract Web3Analytics is BaseRelayRecipient, Ownable {
     using Address for address;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -20,6 +20,15 @@ contract Web3Analytics is Ownable {
     mapping(address => Registration[]) private appRegistrations;
     mapping(address => EnumerableSet.AddressSet) private appUsers;
 
+
+    /**
+    * @dev the Web3Analytics contract constructor
+    * @param forwarder the trusted forwarder contract address
+    **/
+
+    constructor(address forwarder) {
+        _setTrustedForwarder(forwarder);
+    }
 
     /**
     * @dev provides a list of an app's users
@@ -71,6 +80,15 @@ contract Web3Analytics is Ownable {
 
 
     /**
+    * @dev provides a list of apps registered
+    **/
+
+    function getApps() public view returns(address[] memory) {
+        return registeredApps.values();
+    }
+
+
+    /**
     * @dev adds a new user to an app
     * @param did the did key for the user to add
     * @param app the address of the app to register user for
@@ -79,10 +97,10 @@ contract Web3Analytics is Ownable {
     function addUser(string memory did, address app) public {
         // app must be registered and user must not exist for app
         require(registeredApps.contains(app), "App not registered");
-        require(!appUsers[app].contains(msg.sender), "User already exists");
+        require(!appUsers[app].contains(_msgSender()), "User already exists");
 
-        appUsers[app].add(msg.sender);
-        appRegistrations[app].push(Registration(msg.sender, did));                          
+        appUsers[app].add(_msgSender());
+        appRegistrations[app].push(Registration(_msgSender(), did));                          
     }
 
 
@@ -91,9 +109,22 @@ contract Web3Analytics is Ownable {
     **/
 
     function registerApp() public {
-        require(!registeredApps.contains(msg.sender), "App already registered");
+        require(!registeredApps.contains(_msgSender()), "App already registered");
 
-        registeredApps.add(msg.sender);
+        registeredApps.add(_msgSender());
+    }
+
+
+    string public override versionRecipient = "2.2.0";
+
+    function _msgSender() internal view override(Context, BaseRelayRecipient)
+        returns (address sender) {
+        sender = BaseRelayRecipient._msgSender();
+    }
+
+    function _msgData() internal view override(Context, BaseRelayRecipient)
+        returns (bytes memory) {
+        return BaseRelayRecipient._msgData();
     }
 
 }
