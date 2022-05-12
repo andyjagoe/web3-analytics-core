@@ -1,29 +1,34 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
-import { ethers } from "hardhat";
+import { run, ethers } from "hardhat";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  await run('compile');
+
+  // Rinkeby account addresses
+  const trustedForwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
+  const relayHub = '0x6650d69225CA31049DB7Bd210aE4671c0B1ca132';
 
   // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const web3AnalyticsPaymasterFactory = await ethers.getContractFactory("Web3AnalyticsPaymaster");
+  const web3AnalyticsPaymaster = await web3AnalyticsPaymasterFactory.deploy();
 
-  await greeter.deployed();
+  await web3AnalyticsPaymaster.deployed();
 
-  console.log("Greeter deployed to:", greeter.address);
+  console.log("web3AnalyticsPaymaster deployed to:", web3AnalyticsPaymaster.address);
+
+  // Deploy main contract
+  const Web3AnalyticsFactory = await ethers.getContractFactory("Web3Analytics");
+  const Web3Analytics = await Web3AnalyticsFactory.deploy(trustedForwarder);
+  await Web3Analytics.deployed();
+
+  console.log("Web3Analytics deployed to:", Web3Analytics.address);
+
+  // Configure Paymaster
+  await web3AnalyticsPaymaster.setRelayHub(relayHub);
+  await web3AnalyticsPaymaster.setTrustedForwarder(trustedForwarder);
+  await web3AnalyticsPaymaster.setTarget(Web3Analytics.address);
+
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
