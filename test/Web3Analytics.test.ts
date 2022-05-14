@@ -6,7 +6,6 @@ import { GsnTestEnvironment } from '@opengsn/dev';
 import { ContractFactory, Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { GsnDomainSeparatorType } from '@opengsn/common/dist/EIP712/TypedRequestData';
-//import Web3Analytics from "../abi/contracts/Web3Analytics.sol/Web3Analytics.json";
 import Web3Analytics from "../artifacts/contracts/Web3Analytics.sol/Web3Analytics.json";
 import Web3AnalyticsPaymaster from "../artifacts/contracts/Web3AnalyticsPaymaster.sol/Web3AnalyticsPaymaster.json";
 import TestPaymasterEverythingAccepted from "@opengsn/cli/dist/compiled/TestPaymasterEverythingAccepted.json";
@@ -61,9 +60,6 @@ describe("Web3Analytics", function () {
 
     expect(await web3Analytics.connect(owner).isAppRegistered(addr1.address)).to.equal(true);
 
-    await expect(web3Analytics.connect(addr1).isAppRegistered(addr1.address)).
-    to.be.revertedWith('Ownable: caller is not the owner');
-
   });
 
   it("Allows new users to register for app", async function () {
@@ -90,6 +86,9 @@ describe("Web3Analytics", function () {
     await expect(web3Analytics.connect(addr2).addUser(did, addr1.address)).
     to.be.revertedWith('User already exists');
 
+    // Check if a given user is registered for an app
+    expect(await web3Analytics.connect(addr2).isUserRegistered(addr1.address)).to.equal(true);
+    expect(await web3Analytics.connect(addr3).isUserRegistered(addr1.address)).to.equal(false);
   });
 
   it("Return correct count of apps and app users", async function () {

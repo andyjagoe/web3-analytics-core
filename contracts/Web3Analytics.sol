@@ -65,8 +65,18 @@ contract Web3Analytics is BaseRelayRecipient, Ownable {
     * @param app the application to check registration for
     **/
 
-    function isAppRegistered(address app) public view onlyOwner returns(bool) {
+    function isAppRegistered(address app) public view returns(bool) {
         return registeredApps.contains(app);
+    }
+
+
+    /**
+    * @dev returns whether user is registered for given app
+    * @param app the application to check registration for
+    **/
+
+    function isUserRegistered(address app) public view returns(bool) {
+        return appUsers[app].contains(_msgSender());
     }
 
 
