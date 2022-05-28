@@ -11,6 +11,7 @@ import "solidity-coverage";
 import "hardhat-abi-exporter";
 
 import "./tasks/fundPaymaster";
+import "./tasks/faucet";
 
 dotenv.config();
 
@@ -35,7 +36,6 @@ const config: HardhatUserConfig = {
       chainId: 31337,
       forking: {
         url: process.env.POLYGON_URL || "",
-        blockNumber: 27655825
       }
     },
     rinkeby: {
