@@ -56,14 +56,55 @@ describe("Web3Analytics", function () {
 
 
   it("Allows new app to register", async function () {
-    await web3Analytics.connect(addr1).registerApp();
-
+    const app = "My App";
+    const url = "https://myapp.xyz";
+    await web3Analytics.connect(addr1).registerApp(app, url);
     expect(await web3Analytics.connect(owner).isAppRegistered(addr1.address)).to.equal(true);
+
+    const {appAddress, appName, appUrl} = await web3Analytics.getAppData(addr1.address);
+    expect(appAddress).to.equal(addr1.address);
+    expect(appName).to.equal(app);
+    expect(appUrl).to.equal(url);
+
+    //Verify we can register without app url
+    await web3Analytics.connect(addr2).registerApp(app, '');
+    expect(await web3Analytics.connect(owner).isAppRegistered(addr2.address)).to.equal(true);
+    const {appAddress:address1, appName:name1, appUrl:url1} = await web3Analytics.getAppData(addr2.address);
+    expect(address1).to.equal(addr2.address);
+    expect(name1).to.equal(app);
+    expect(url1).to.equal('');
+
+    //Verify app name is required
+    await expect(web3Analytics.connect(addr3).registerApp('', '')).
+    to.be.revertedWith('Name is required');
 
   });
 
+  it("Allows updating app information", async function () {
+    const app = "My App";
+    const url = "https://myapp.xyz";
+    await web3Analytics.connect(addr1).registerApp(app, url);
+
+    const app1 = "My Updated App";
+    const url1 = "https://myapp.xyz/updated";
+    await web3Analytics.connect(addr1).updateAppData(app1, url1);
+
+    const {appAddress, appName, appUrl} = await web3Analytics.getAppData(addr1.address);
+    expect(appAddress).to.equal(addr1.address);
+    expect(appName).to.equal(app1);
+    expect(appUrl).to.equal(url1);
+
+    //Verify app name is required
+    await expect(web3Analytics.connect(addr1).updateAppData('', '')).
+    to.be.revertedWith('Name is required');
+
+    //Verify app must be registered
+    await expect(web3Analytics.connect(addr2).updateAppData('Test', '')).
+    to.be.revertedWith('App not registered');
+  });
+
   it("Allows new users to register for app", async function () {
-    await web3Analytics.connect(addr1).registerApp();
+    await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
 
     // Register new user for app
     const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU'
@@ -94,9 +135,9 @@ describe("Web3Analytics", function () {
   it("Return correct count of apps and app users", async function () {
     // Check count for apps
     expect(await web3Analytics.getAppCount()).to.equal(0);
-    await web3Analytics.connect(addr1).registerApp();
-    await web3Analytics.connect(addr2).registerApp();
-    await web3Analytics.connect(addr3).registerApp();
+    await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.connect(addr2).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.connect(addr3).registerApp("My App", "https://myapp.xyz");
     expect(await web3Analytics.getAppCount()).to.equal(3);
 
     // Check count for users (we re-use did b/c it's verified off chain by indexer)
@@ -112,8 +153,8 @@ describe("Web3Analytics", function () {
   });
 
   it("Returns correct list of apps", async function () {
-    await web3Analytics.connect(addr1).registerApp();
-    await web3Analytics.connect(addr2).registerApp();
+    await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.connect(addr2).registerApp("My App", "https://myapp.xyz");
     const apps = await web3Analytics.getApps();
     console.log(`app list: ${apps}`);
     expect(apps).to.include("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
@@ -154,6 +195,7 @@ describe("Web3Analytics", function () {
 
   });
 
+  /*
   it("Allows users to register gas free via GSN (v1)", async function () {
     // Uses code similar to working demo app on Rinkeby
 
@@ -185,7 +227,7 @@ describe("Web3Analytics", function () {
 
 
     // Register an app and verify it gets registered
-    await web3a.connect(deployer).registerApp();
+    await web3a.connect(deployer).registerApp("My App", "https://myapp.xyz");
     expect(await web3a.getAppCount()).to.equal(1);
 
 
@@ -211,20 +253,20 @@ describe("Web3Analytics", function () {
     const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU'
 
     // FAILS: Returns unregistered domain sep. This works fine on Rinkeby so issue with GsnTestEnvironment?
-        /*
-    const transaction = await contract.addUser(
-      did, 
-      await deployer.getAddress(),
-      {gasLimit: 1e6}
-    )
-    console.log(transaction)
-    const receipt = await provider.waitForTransaction(transaction.hash)
-    console.log(receipt)
-
-    */
+    //const transaction = await contract.addUser(
+    //  did, 
+    //  await deployer.getAddress(),
+    //  {gasLimit: 1e6}
+    //)
+    //console.log(transaction)
+    //const receipt = await provider.waitForTransaction(transaction.hash)
+    //console.log(receipt)
 
   });
+  */
 
+
+  /*
   it("Allows users to register gas free via GSN (v2)", async function () {
     const testEnv = GsnTestEnvironment.loadDeployment();
     console.log(testEnv);
@@ -245,38 +287,6 @@ describe("Web3Analytics", function () {
       balance: ${ethers.utils.formatEther(await deploymentProvider.getBalance(signer.address))}`);
 
 
-    /*
-    // Deploy a forwarder contract from this signer
-    const forwarderFactory = new ethers.ContractFactory(
-      Forwarder.abi, 
-      Forwarder.bytecode, 
-      signer
-    );
-    const forwarder = await forwarderFactory.deploy();
-    await forwarder.deployed()
-    console.log(`forwarder address: ${forwarder.address}`);
-    await registerForwarderForGsn(forwarder as any);
-    //await forwarder.registerDomainSeparator("GSN Relayed Transaction", "2");
-    await registerForwarderForGsn(forwarder as any);
-      */
-
-
-    /*
-    // Get Forwarder Contract so we can inspect
-    const forwarderContract = new ethers.Contract(
-      forwarderAddress as any,
-      Forwarder.abi,
-      signer
-    );
-
-    await forwarderContract.registerDomainSeparator(
-      GsnDomainSeparatorType.name, 
-      GsnDomainSeparatorType.version
-    )
-    */
-
-
-
     // Deploy our main contract from this signer
     const factory = await ethers.getContractFactory("Web3Analytics");
     const web3a = await factory.connect(signer).deploy(forwarderAddress as any)
@@ -284,7 +294,7 @@ describe("Web3Analytics", function () {
     console.log(`web3a address: ${web3a.address}`);
 
     // Register an app and verify it gets registered
-    await web3a.connect(signer).registerApp();
+    await web3a.connect(signer).registerApp("My App", "https://myapp.xyz");
     expect(await web3a.getAppCount()).to.equal(1);
 
 
@@ -316,7 +326,6 @@ describe("Web3Analytics", function () {
     }); 
     await txn0.wait();
 
-
     // Get RelayHub Contract so we can test funding directly
     const relayHubContract = new ethers.Contract(
       relayHubAddress as any,
@@ -332,6 +341,7 @@ describe("Web3Analytics", function () {
 
     // Verify RelayHub balance increased
     const hubBalanceAfter = await deploymentProvider.getBalance(relayHubAddress as any);
+    console.log(hubBalanceAfter);
     expect(hubBalanceAfter).to.equal(hubBalanceBefore.add(ethers.utils.parseEther("2.0")));
 
 
@@ -373,24 +383,23 @@ describe("Web3Analytics", function () {
     );
     expect(await web3a.getUserCount(signer.address)).to.equal(1);
     
-    /*
     // THIS FAILS: Verify that it works with our wallet with no ETH through GSN
-    const txn2 = await web3a.connect(await etherProvider.getSigner(from)).addUser(
-      did, 
-      signer.address, 
-      {gasLimit: 1e6}
-    );
-    console.log(txn2);
-    expect(await web3a.getUserCount(signer.address)).to.equal(2);
+    //const txn2 = await web3a.connect(await etherProvider.getSigner(from)).addUser(
+    //  did, 
+    //  signer.address, 
+    //  {gasLimit: 1e6}
+    //);
+    //console.log(txn2);
+    //expect(await web3a.getUserCount(signer.address)).to.equal(2);
 
     // Check receipt
-		const receipt = await etherProvider.waitForTransaction(txn2.hash)
-		const result = receipt.logs.
-			map(entry => web3a.interface.parseLog(entry)).
-			filter(entry => entry != null)[0];
-    */
+		//const receipt = await etherProvider.waitForTransaction(txn2.hash)
+		//const result = receipt.logs.
+		//	map(entry => web3a.interface.parseLog(entry)).
+		//	filter(entry => entry != null)[0];
 
   });
+  */
 
   /*
   it("Allows users to register gas free via GSN (v3)", async function () {
@@ -416,7 +425,7 @@ describe("Web3Analytics", function () {
     console.log(`web3a address: ${web3a.address}`);
     console.log(`owner signers: ${ owner.address } `);
 
-    await web3a.connect(owner).registerApp();
+    await web3a.connect(owner).registerApp("My App", "https://myapp.xyz");
     expect(await web3a.getAppCount()).to.equal(1);
 
     const conf = { 

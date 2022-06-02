@@ -16,7 +16,14 @@ contract Web3Analytics is BaseRelayRecipient, Ownable {
         string userDid;
     }
 
+    struct App {
+        address appAddress;
+        string appName;
+        string appUrl;
+    }
+
     EnumerableSet.AddressSet private registeredApps;
+    mapping(address => App) private appData;
     mapping(address => Registration[]) private appRegistrations;
     mapping(address => EnumerableSet.AddressSet) private appUsers;
 
@@ -116,12 +123,40 @@ contract Web3Analytics is BaseRelayRecipient, Ownable {
 
     /**
     * @dev registers new app for web3analytics
+    * @param name the name of the app
+    * @param url the app's url (optional)
     **/
 
-    function registerApp() public {
+    function registerApp(string memory name, string memory url) public {
         require(!registeredApps.contains(_msgSender()), "App already registered");
+        require(bytes(name).length != 0, "Name is required");
 
         registeredApps.add(_msgSender());
+        appData[_msgSender()] = App(_msgSender(), name, url);                          
+    }
+
+
+    /**
+    * @dev provides app data for registered app
+    * @param app the application to retrieve data for
+    **/
+
+    function getAppData(address app) public view returns(App memory) {
+        return appData[app];
+    }
+
+
+    /**
+    * @dev updates app data for registered app
+    * @param name the name of the app
+    * @param url the app's url (optional)
+    **/
+
+    function updateAppData(string memory name, string memory url) public {
+        require(registeredApps.contains(_msgSender()), "App not registered");
+        require(bytes(name).length != 0, "Name is required");
+
+        appData[_msgSender()] = App(_msgSender(), name, url);                          
     }
 
 

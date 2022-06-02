@@ -61,6 +61,42 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "app",
+        "type": "address"
+      }
+    ],
+    "name": "getAppData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "appAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "appUrl",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Web3Analytics.App",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getApps",
     "outputs": [
@@ -213,7 +249,18 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "url",
+        "type": "string"
+      }
+    ],
     "name": "registerApp",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -250,6 +297,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "url",
+        "type": "string"
+      }
+    ],
+    "name": "updateAppData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
