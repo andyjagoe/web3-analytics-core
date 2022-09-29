@@ -3,9 +3,13 @@ import { run, ethers } from "hardhat";
 async function main() {
   await run('compile');
 
+  // Goerli account addresses
+  const trustedForwarder = '0x7A95fA73250dc53556d264522150A940d4C50238';
+  const relayHub = '0x40bE32219F0F106067ba95145e8F2b3e7930b201';
+  
   // Rinkeby account addresses
-  const trustedForwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
-  const relayHub = '0x6650d69225CA31049DB7Bd210aE4671c0B1ca132';
+  //const trustedForwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
+  //const relayHub = '0x6650d69225CA31049DB7Bd210aE4671c0B1ca132';
 
   // Hardhat account addresses
   //const trustedForwarder = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0';
