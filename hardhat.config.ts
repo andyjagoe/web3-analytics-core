@@ -38,6 +38,16 @@ const config: HardhatUserConfig = {
         url: process.env.POLYGON_URL || "",
       }
     },
+    polygon: {
+      url: process.env.POLYGON_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+    mumbai: {
+      url: process.env.MUMBAI_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
     goerli: {
       url: process.env.GOERLI_URL || "",
       accounts:
@@ -54,7 +64,12 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: { 
+      rinkeby: process.env.ETHERSCAN_API_KEY,
+      goerli: process.env.ETHERSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY, 
+    }
   },
   abiExporter: {
     runOnCompile: true,

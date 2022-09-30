@@ -3,9 +3,18 @@ import { run, ethers } from "hardhat";
 async function main() {
   await run('compile');
 
+
+  // Polygon account addresses
+  const trustedForwarder = '0xdA78a11FD57aF7be2eDD804840eA7f4c2A38801d';
+  const relayHub = '0x6C28AfC105e65782D9Ea6F2cA68df84C9e7d750d';
+
+  // Polygon Mumbai account addresses
+  //const trustedForwarder = '0x4d4581c01A457925410cd3877d17b2fd4553b2C5';
+  //const relayHub = '0x6646cD15d33cE3a6933e36de38990121e8ba2806';
+
   // Goerli account addresses
-  const trustedForwarder = '0x7A95fA73250dc53556d264522150A940d4C50238';
-  const relayHub = '0x40bE32219F0F106067ba95145e8F2b3e7930b201';
+  //const trustedForwarder = '0x7A95fA73250dc53556d264522150A940d4C50238';
+  //const relayHub = '0x40bE32219F0F106067ba95145e8F2b3e7930b201';
   
   // Rinkeby account addresses
   //const trustedForwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
