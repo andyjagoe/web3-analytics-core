@@ -38,6 +38,9 @@ const config: HardhatUserConfig = {
         url: process.env.POLYGON_URL || "",
       }
     },
+    local: {
+      url: 'http://localhost:8545'
+    },
     polygon: {
       url: process.env.POLYGON_URL || "",
       accounts:
