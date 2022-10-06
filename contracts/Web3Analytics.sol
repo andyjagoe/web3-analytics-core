@@ -1,13 +1,14 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@opengsn/contracts/src/BaseRelayRecipient.sol";
+import "@opengsn/contracts/src/ERC2771Recipient.sol";
 
 
-contract Web3Analytics is BaseRelayRecipient, Ownable {
+
+contract Web3Analytics is ERC2771Recipient, Ownable {
     using Address for address;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -82,8 +83,8 @@ contract Web3Analytics is BaseRelayRecipient, Ownable {
     * @param app the application to check registration for
     **/
 
-    function isUserRegistered(address app) public view returns(bool) {
-        return appUsers[app].contains(_msgSender());
+    function isUserRegistered(address app, address user) public view returns(bool) {
+        return appUsers[app].contains(user);
     }
 
 
@@ -160,16 +161,14 @@ contract Web3Analytics is BaseRelayRecipient, Ownable {
     }
 
 
-    string public override versionRecipient = "2.2.0";
-
-    function _msgSender() internal view override(Context, BaseRelayRecipient)
+    function _msgSender() internal view override(Context, ERC2771Recipient)
         returns (address sender) {
-        sender = BaseRelayRecipient._msgSender();
+        sender = ERC2771Recipient._msgSender();
     }
 
-    function _msgData() internal view override(Context, BaseRelayRecipient)
+    function _msgData() internal view override(Context, ERC2771Recipient)
         returns (bytes memory) {
-        return BaseRelayRecipient._msgData();
+        return ERC2771Recipient._msgData();
     }
 
 }
