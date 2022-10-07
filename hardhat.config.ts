@@ -26,7 +26,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.6",
+  solidity: "0.8.7",
   networks: {
     hardhat: {
       loggingEnabled: true,
@@ -37,6 +37,9 @@ const config: HardhatUserConfig = {
       forking: {
         url: process.env.POLYGON_URL || "",
       }
+    },
+    local: {
+      url: 'http://localhost:8545'
     },
     polygon: {
       url: process.env.POLYGON_URL || "",
@@ -62,6 +65,9 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
+    token: "MATIC",
+    gasPriceApi: "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice",
+    coinmarketcap: process.env.COINMARKETCAP_API_KEY
   },
   etherscan: {
     apiKey: { 

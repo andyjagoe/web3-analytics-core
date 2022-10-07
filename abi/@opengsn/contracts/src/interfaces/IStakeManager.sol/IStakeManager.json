@@ -11,6 +11,63 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IERC20",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AbandonedRelayManagerStakeEscheated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "burnAddress",
+        "type": "address"
+      }
+    ],
+    "name": "BurnAddressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "devAddress",
+        "type": "address"
+      }
+    ],
+    "name": "DevAddressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "relayHub",
         "type": "address"
       }
@@ -36,7 +93,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "removalBlock",
+        "name": "removalTime",
         "type": "uint256"
       }
     ],
@@ -72,9 +129,53 @@
         "type": "address"
       },
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "abandonedTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "RelayServerAbandoned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "keepaliveTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "RelayServerKeepalive",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IERC20",
+        "name": "token",
         "type": "address"
       },
       {
@@ -110,6 +211,12 @@
       },
       {
         "indexed": false,
+        "internalType": "contract IERC20",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "reward",
         "type": "uint256"
@@ -136,7 +243,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "withdrawBlock",
+        "name": "withdrawTime",
         "type": "uint256"
       }
     ],
@@ -156,6 +263,12 @@
         "indexed": true,
         "internalType": "address",
         "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IERC20",
+        "name": "token",
         "type": "address"
       },
       {
@@ -207,6 +320,88 @@
         "type": "address"
       }
     ],
+    "name": "escheatAbandonedRelayStake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAbandonedRelayServerConfig",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "devAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "abandonmentDelay",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "escheatmentDelay",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IStakeManager.AbandonedRelayServerConfig",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBurnAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCreationBlock",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMaxUnstakeDelay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
+      }
+    ],
     "name": "getStakeInfo",
     "outputs": [
       {
@@ -223,11 +418,26 @@
           },
           {
             "internalType": "uint256",
-            "name": "withdrawBlock",
+            "name": "withdrawTime",
             "type": "uint256"
           },
           {
-            "internalType": "address payable",
+            "internalType": "uint256",
+            "name": "abandonedTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "keepaliveTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract IERC20",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
             "name": "owner",
             "type": "address"
           }
@@ -235,6 +445,11 @@
         "internalType": "struct IStakeManager.StakeInfo",
         "name": "stakeInfo",
         "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "isSenderAuthorizedHub",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -246,24 +461,9 @@
         "internalType": "address",
         "name": "relayManager",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "relayHub",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minUnstakeDelay",
-        "type": "uint256"
       }
     ],
-    "name": "isRelayManagerStaked",
+    "name": "isRelayEscheatable",
     "outputs": [
       {
         "internalType": "bool",
@@ -275,16 +475,16 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "maxUnstakeDelay",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "markRelayAbandoned",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -295,7 +495,7 @@
         "type": "address"
       },
       {
-        "internalType": "address payable",
+        "internalType": "address",
         "name": "beneficiary",
         "type": "address"
       },
@@ -313,7 +513,33 @@
   {
     "inputs": [
       {
-        "internalType": "address payable",
+        "internalType": "address",
+        "name": "_burnAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setBurnAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_burnAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setDevAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "owner",
         "type": "address"
       }
@@ -326,6 +552,11 @@
   {
     "inputs": [
       {
+        "internalType": "contract IERC20",
+        "name": "token",
+        "type": "address"
+      },
+      {
         "internalType": "address",
         "name": "relayManager",
         "type": "address"
@@ -334,11 +565,35 @@
         "internalType": "uint256",
         "name": "unstakeDelay",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
     "name": "stakeForRelayManager",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -381,6 +636,19 @@
       }
     ],
     "name": "unlockStake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "relayManager",
+        "type": "address"
+      }
+    ],
+    "name": "updateRelayKeepaliveTime",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

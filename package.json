@@ -1,12 +1,15 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "test-local": "hardhat --network local test test/Web3Analytics.test.ts"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@nomiclabs/hardhat-web3": "^2.0.0",
-    "@opengsn/cli": "^2.2.6",
-    "@opengsn/dev": "^2.2.6",
+    "@opengsn/cli": "^3.0.0-beta.1",
+    "@opengsn/dev": "^3.0.0-beta.1",
     "@typechain/ethers-v5": "^7.2.0",
     "@typechain/hardhat": "^2.3.1",
     "@types/chai": "^4.3.1",
@@ -25,7 +28,7 @@
     "eslint-plugin-promise": "^5.2.0",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.4",
-    "hardhat": "^2.9.3",
+    "hardhat": "^2.11.2",
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^2.6.2",
@@ -38,8 +41,8 @@
     "web3": "^1.7.3"
   },
   "dependencies": {
-    "@opengsn/contracts": "^2.2.6",
-    "@opengsn/provider": "^2.2.6",
+    "@opengsn/contracts": "^3.0.0-beta.1",
+    "@opengsn/provider": "^3.0.0-beta.1",
     "@openzeppelin/contracts": "^4.5.0"
   },
   "overrides": {
