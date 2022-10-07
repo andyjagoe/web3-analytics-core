@@ -161,7 +161,6 @@ describe("Web3Analytics", function () {
     expect(apps).to.not.include("0x90f79bf6eb2c4f870365e785982e1f101e93b906");
   });
 
-
   it("Allows users to register gas free via GSN (v3) using accept everything paymaster", async function () {
     let env = await GsnTestEnvironment.startGsn('localhost'); // `npx hardhat node` must be running
     const { 
