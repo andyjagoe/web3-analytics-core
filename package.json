@@ -4,9 +4,9 @@
     "test-local": "hardhat --network local test test/Web3Analytics.test.ts"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
-    "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@opengsn/cli": "^3.0.0-beta.1",
     "@opengsn/dev": "^3.0.0-beta.1",
@@ -26,7 +26,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-promise": "^5.2.0",
-    "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.4",
     "hardhat": "^2.11.2",
     "hardhat-abi-exporter": "^2.8.0",

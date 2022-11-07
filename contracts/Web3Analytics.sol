@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@opengsn/contracts/src/ERC2771Recipient.sol";
 
 
+import "hardhat/console.sol";
+
 
 contract Web3Analytics is ERC2771Recipient, Ownable {
     using Address for address;
@@ -23,8 +25,11 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
         string appUrl;
     }
 
+    address private allowedPaymaster;
+    uint256 private feeInBasisPoints;
     EnumerableSet.AddressSet private registeredApps;
     mapping(address => App) private appData;
+    mapping(address => uint256) private appBalances;
     mapping(address => Registration[]) private appRegistrations;
     mapping(address => EnumerableSet.AddressSet) private appUsers;
 
@@ -37,6 +42,45 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
     constructor(address forwarder) {
         _setTrustedForwarder(forwarder);
     }
+
+
+    /**
+    * @dev sets trusted paymaster
+    * @param paymaster the address of our trusted paymaster
+    **/
+
+    function setTrustedPaymaster(address paymaster) public onlyOwner {
+        allowedPaymaster = paymaster;
+    }
+
+
+    /**
+    * @dev gets trusted paymaster
+    **/
+
+    function getTrustedPaymaster() public view returns(address) {
+        return allowedPaymaster;
+    }
+
+
+    /**
+    * @dev sets feeInBasisPoints
+    * @param fee the fee in basis points
+    **/
+
+    function setNetworkFee(uint256 fee) public onlyOwner {
+        feeInBasisPoints = fee;
+    }
+
+
+    /**
+    * @dev gets feeInBasisPoints
+    **/
+
+    function getNetworkFee() public view returns(uint256) {
+        return feeInBasisPoints;
+    }
+
 
     /**
     * @dev provides a list of an app's users
@@ -158,6 +202,44 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
         require(bytes(name).length != 0, "Name is required");
 
         appData[_msgSender()] = App(_msgSender(), name, url);                          
+    }
+
+
+    /**
+    * @dev gets account balance of an app
+    * @param app the application to retrieve balance for
+    **/
+
+    function getBalance(address app) public view returns(uint256) {
+        return appBalances[app];
+    }
+
+
+    /**
+    * @dev allows adding value to account balance of an app
+    * @param app the application to add value to
+    **/
+
+    function topUpBalance(address app) public payable {
+        require(msg.value > 0, 'Top up must be greater than 0');
+        appBalances[app] = appBalances[app] + msg.value;
+    }
+
+
+    /**
+    * @dev allows deducting value from account balance of an app
+    * @param app the application to charge fee to
+    * @param fee the amount of the fee
+    **/
+
+    function chargeFee(address app, uint256 fee) public payable {
+        require(allowedPaymaster != address(0), 'Trusted paymaster must be set');
+        require(allowedPaymaster == _msgSender(), 'Only trusted paymaster may charge fee');
+
+        console.log("chargeFee balance: %s", appBalances[app]);
+        console.log("chargeFee fee: %s", fee);
+
+        appBalances[app] = appBalances[app] - fee;
     }
 
 

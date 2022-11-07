@@ -7,6 +7,7 @@ import { ContractFactory, Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import Web3Analytics from "../artifacts/contracts/Web3Analytics.sol/Web3Analytics.json";
 
+
 //import Web3AnalyticsPaymaster from "../artifacts/contracts/Web3AnalyticsPaymaster.sol/Web3AnalyticsPaymaster.json";
 //import TestPaymasterEverythingAccepted from "@opengsn/cli/dist/compiled/TestPaymasterEverythingAccepted.json";
 import RelayHub from "@opengsn/cli/dist/compiled/RelayHub.json";
@@ -51,6 +52,47 @@ describe("Web3Analytics", function () {
     Web3AnalyticsContractFactory = await ethers.getContractFactory("Web3Analytics");
     web3Analytics = await Web3AnalyticsContractFactory.deploy(trustedForwarder);
     await web3Analytics.deployed();
+
+  });
+
+
+  it("Allows setting and getting trusted paymaster", async function () {
+    // check initial address for trusted paymaster
+    expect (await web3Analytics.connect(addr1).getTrustedPaymaster())
+      .to.equal(ethers.constants.AddressZero);
+
+    // Deploy paymaster contract   
+    Web3AnalyticsPaymasterContractFactory = await ethers.getContractFactory("Web3AnalyticsPaymaster");
+    web3AnalyticsPaymaster = await Web3AnalyticsPaymasterContractFactory.deploy();
+    await web3AnalyticsPaymaster.deployed();
+
+    // make sure only owner can set trusted paymaster
+    await expect(web3Analytics.connect(addr1).setTrustedPaymaster(web3AnalyticsPaymaster.address)).
+      to.be.revertedWith('Ownable: caller is not the owner');
+      
+    // verify owner can correctly set trusted paymaster
+    await web3Analytics.connect(owner).setTrustedPaymaster(web3AnalyticsPaymaster.address)
+    expect (await web3Analytics.connect(addr1).getTrustedPaymaster())
+      .to.equal(web3AnalyticsPaymaster.address);  
+
+  });
+
+
+  it("Allows setting and getting network fee", async function () {
+    // check initial fee
+    expect (await web3Analytics.connect(addr1).getNetworkFee())
+      .to.equal(0);
+
+    const feeInBasisPoints = 1000;
+
+    // make sure only owner can set trusted paymaster
+    await expect(web3Analytics.connect(addr1).setNetworkFee(feeInBasisPoints)).
+      to.be.revertedWith('Ownable: caller is not the owner');
+      
+    // verify owner can correctly set fee in basis points
+    await web3Analytics.connect(owner).setNetworkFee(feeInBasisPoints)
+    expect (await web3Analytics.connect(addr1).getNetworkFee())
+      .to.equal(feeInBasisPoints);  
 
   });
 
@@ -103,8 +145,16 @@ describe("Web3Analytics", function () {
     to.be.revertedWith('App not registered');
   });
 
+  it("Correctly tops up and checks balance for apps", async function () {
+    await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
+    expect(await web3Analytics.getBalance(addr1.address)).to.equal(0);
+    await web3Analytics.topUpBalance(addr1.address, {value: ethers.utils.parseEther("1.0")});
+    expect(await web3Analytics.getBalance(addr1.address)).to.equal(ethers.utils.parseEther("1.0"));
+  });
+
   it("Allows new users to register for app", async function () {
     await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.topUpBalance(addr1.address, {value: ethers.utils.parseEther("1.0")});
 
     // Register new user for app
     const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU'
@@ -136,8 +186,11 @@ describe("Web3Analytics", function () {
     // Check count for apps
     expect(await web3Analytics.getAppCount()).to.equal(0);
     await web3Analytics.connect(addr1).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.topUpBalance(addr1.address, {value: ethers.utils.parseEther("1.0")});
     await web3Analytics.connect(addr2).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.topUpBalance(addr2.address, {value: ethers.utils.parseEther("1.0")});
     await web3Analytics.connect(addr3).registerApp("My App", "https://myapp.xyz");
+    await web3Analytics.topUpBalance(addr3.address, {value: ethers.utils.parseEther("1.0")});
     expect(await web3Analytics.getAppCount()).to.equal(3);
 
     // Check count for users (we re-use did b/c it's verified off chain by indexer)
@@ -161,6 +214,7 @@ describe("Web3Analytics", function () {
     expect(apps).to.not.include("0x90f79bf6eb2c4f870365e785982e1f101e93b906");
   });
 
+
   it("Allows users to register gas free via GSN (v3) using accept everything paymaster", async function () {
     let env = await GsnTestEnvironment.startGsn('localhost'); // `npx hardhat node` must be running
     const { 
@@ -181,6 +235,7 @@ describe("Web3Analytics", function () {
 
     await web3a.connect(owner).registerApp("My App", "https://myapp.xyz");
     expect(await web3a.getAppCount()).to.equal(1);
+
 
     const conf = { 
       paymasterAddress: paymasterAddress,
@@ -217,6 +272,7 @@ describe("Web3Analytics", function () {
     await GsnTestEnvironment.stopGsn()
   });
 
+  
   it("Allows users to register gas free via GSN (v3) using Web3Analytics paymaster", async function () {
     let env = await GsnTestEnvironment.startGsn('localhost'); // `npx hardhat node` must be running
     const { 
@@ -248,17 +304,20 @@ describe("Web3Analytics", function () {
     expect(await web3a.isTrustedForwarder(forwarderAddress as any)).to.equal(true);
     expect(await web3AnalyticsPaymaster.ourTarget()).to.equal(web3a.address);
 
+
     // Fund paymaster
     await owner.sendTransaction({
       from: owner.address,
       to: web3AnalyticsPaymaster.address, 
-      value: ethers.utils.parseEther("1.0"),
+      value: ethers.utils.parseEther("5.0"),
       gasLimit: 1e6
     }); 
+
 
     // Confirm we can create app successfully
     await web3a.connect(owner).registerApp("My App", "https://myapp.xyz");
     expect(await web3a.getAppCount()).to.equal(1);
+
 
     // Configure RelayProvider
     const conf = { 
@@ -274,6 +333,7 @@ describe("Web3Analytics", function () {
     await gsnProvider.init();
     
 
+    // generate account to process transaction from
     const account = ethers.Wallet.createRandom();
     gsnProvider.addAccount(account.privateKey);
     const from = account.address;
@@ -281,6 +341,41 @@ describe("Web3Analytics", function () {
 
 
     const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU'
+
+    // verify rejection for methods that are not approved
+    await expect(web3a.connect(etherProvider.getSigner(from)).addUser(
+      did, 
+      owner.address, 
+      {gasLimit: 1e6}
+    )).to.eventually.be.rejectedWith("method not whitelisted");
+
+
+    // whitelist addUser method
+    const ABI = [ "function addUser(string did, address app)" ];
+    const iface = new ethers.utils.Interface(ABI);
+    const web3AnalyticsEncoded = iface.encodeFunctionData("addUser", [did, owner.address]);    
+    await web3AnalyticsPaymaster.connect(owner).whitelistMethod(
+      web3a.address, web3AnalyticsEncoded.substring(0, 10), true
+    )
+    
+    // verify transaction is rejected if app balance is too low
+    await expect(web3a.connect(etherProvider.getSigner(from)).addUser(
+      did, 
+      owner.address, 
+      {gasLimit: 1e6}
+    )).to.eventually.be.rejectedWith("insufficient app balance");
+
+    // top up account balance for test app
+    await web3a.topUpBalance(owner.address, {value: ethers.utils.parseEther("1.0")});
+    const appBalance = await web3a.getBalance(owner.address);
+
+    // set trusted paymaster
+    await web3a.connect(owner).setTrustedPaymaster(web3AnalyticsPaymaster.address)
+    const trustedPaymaster = await web3a.connect(addr1).getTrustedPaymaster()
+    expect(trustedPaymaster).to.equal(web3AnalyticsPaymaster.address);  
+
+
+    // process add user transaction using opengsn when network fee is 0
     const txn = await web3a.connect(etherProvider.getSigner(from)).addUser(
       did, 
       owner.address, 
@@ -288,9 +383,68 @@ describe("Web3Analytics", function () {
     );
     //console.log(txn);
 
+    // get fee charged from event logs
+    let receipt = await txn.wait();
+    const abi = [ "event FeeCharged(uint256 baseFee, uint256 networkFee, uint256 totalFee)" ];
+    const myIface = new ethers.utils.Interface(abi);
+    const log = myIface.parseLog(receipt.logs[0]);
+    const {baseFee, networkFee, totalFee} = log.args;
+
+    // verify that network fee is zero and baseFee = totalFee
+    expect(baseFee).to.equal(totalFee);
+    expect(networkFee).to.equal(0);
+
+    // verify that new balance = old balance - fee
+    const newbalance = appBalance.sub(totalFee)
+    expect(await web3a.getBalance(owner.address)).to.equal(newbalance);
+    
+    // verify that addUser txn was actually processed
     expect(await web3a.getUserCount(owner.address)).to.equal(1);
 
+
+    // set network fee of 10%
+    const feeInBasisPoints = 1000;
+    await web3a.connect(owner).setNetworkFee(feeInBasisPoints)
+
+
+    // set up another opengsn transaction to make sure new network fee works
+    const newAccount = ethers.Wallet.createRandom();
+    gsnProvider.addAccount(newAccount.privateKey);
+    const newEtherProvider = new ethers.providers.Web3Provider(gsnProvider as any);
+    const newDid = 'did:key:zQ3shWWc4cydywFqJsPCJgBaoGXD9KYnGzQP1VXzQYm4FUFHs';
+
+    // process transaction
+    const txnWithFee = await web3a
+    .connect(newEtherProvider
+    .getSigner(newAccount.address))
+    .addUser(
+      newDid, 
+      owner.address, 
+      {gasLimit: 1e6}
+    );
+
+    // get events emited from tx receipt
+    let newReceipt = await txnWithFee.wait();
+    const newLog = myIface.parseLog(newReceipt.logs[0]);
+    const {baseFee:newBaseFee, networkFee:newNetworkFee, totalFee:newTotalFee} = newLog.args;
+
+    // verify network fee was calculated correctly
+    expect(newBaseFee.div(10000).mul(feeInBasisPoints)).to.equal(newNetworkFee);
+
+    // verify total fee is sum of base fee plus network fee
+    expect(newBaseFee.add(newNetworkFee)).to.equal(newTotalFee);
+
+    // verify app balance reflects deducation of total fee after transaction
+    expect(await web3a.getBalance(owner.address)).to.equal(newbalance.sub(newTotalFee));
+
+    // verify we add user transaction processed successfully
+    expect(await web3a.getUserCount(owner.address)).to.equal(2);
+
+
+    // stop GSN test environment
     await GsnTestEnvironment.stopGsn()
+    
   });
+
 
 });
