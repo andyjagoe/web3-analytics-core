@@ -6,11 +6,10 @@ pragma experimental ABIEncoderV2;
 import "@opengsn/contracts/src/BasePaymaster.sol";
 import "./Web3Analytics.sol";
 
-import "hardhat/console.sol";
-
 
 contract Web3AnalyticsPaymaster is BasePaymaster {
 	address public ourTarget;
+    uint256 public gasUsedByPost;
     mapping(address => mapping(bytes4 => bool)) public methodWhitelist;
     
     event FeeCharged(uint256 baseFee, uint256 networkFee, uint256 totalFee);
@@ -27,6 +26,16 @@ contract Web3AnalyticsPaymaster is BasePaymaster {
         methodWhitelist[target][method] = isAllowed;
     }
 
+    /**
+     * set gas used by postRelayedCall, for proper gas calculation.
+     * You can use TokenGasCalculator to calculate these values 
+     * (they depend on actual code of postRelayedCall,
+     */
+    function setPostGasUsage(uint256 _gasUsedByPost) external onlyOwner {
+        gasUsedByPost = _gasUsedByPost;
+    }
+
+
 	function _preRelayedCall(
         GsnTypes.RelayRequest calldata relayRequest,
         bytes calldata signature,
@@ -42,31 +51,19 @@ contract Web3AnalyticsPaymaster is BasePaymaster {
         // only pay for transactions for our contract
         require(relayRequest.request.to == ourTarget);
 
-        console.log("\n\n_preRelayedCall console log");
-        console.log("ourTarget: %s", ourTarget);
-        console.log("maxPossibleGas: %s",  maxPossibleGas);
-        console.log("tx.gasprice: %s", tx.gasprice);
-        console.log("estimated cost: %s", maxPossibleGas * tx.gasprice);
-
         // check that the method being called is approved
         bytes4 method = GsnUtils.getMethodSig(relayRequest.request.data);
         require(methodWhitelist[ourTarget][method], "method not whitelisted");
 
         // get address of app user is registering for
-        (string memory did, address app) = abi.decode(relayRequest.request.data[4:], (string, address) );
-        console.log("relayRequest.request.data: did: %s address: %s", did, app);
+        (, address app) = abi.decode(relayRequest.request.data[4:], (string, address) );
 
         // check account balance of app to see if has sufficient funds for user registration
         Web3Analytics w3 = Web3Analytics(ourTarget);
         uint256 balance = w3.getBalance(app);
-        console.log("balance of app %s is %s", app, balance);
         uint256 maxEstimatedCost = maxPossibleGas * tx.gasprice;
-
         uint256 fee = (maxEstimatedCost / 10000) * w3.getNetworkFee(); 
-        console.log("network fee is %s", fee);
-
         uint256 price = maxEstimatedCost + fee;
-        console.log("price is %s", price);
 
         require(balance > price, "insufficient app balance");
 
@@ -84,30 +81,24 @@ contract Web3AnalyticsPaymaster is BasePaymaster {
     override
     virtual {
         (context, success, gasUseWithoutPost, relayData);
-        console.log("\n\n_postRelayedCall console log");
-        console.log("success: %s", success);
-        console.log("gasUseWithoutPost: %s", gasUseWithoutPost);
-        console.log("tx.gasprice: %s", tx.gasprice);
-        console.log("actual cost: %s", gasUseWithoutPost * tx.gasprice);
 
+        // get app address for this transaction
         (address app) = abi.decode(context, (address) );
-        console.log("context: address: %s", app);
 
-        //deduct amount of transaction + transaction fee
-        console.log("ourTarget: %s", ourTarget);
+        // get actual cost of transaction
+        uint256 ethActualCharge = relayHub.calculateCharge(
+            gasUseWithoutPost + gasUsedByPost, relayData);
+
+        // calculate price including network fee
         Web3Analytics w3 = Web3Analytics(ourTarget);
-        uint256 actualCost = gasUseWithoutPost * tx.gasprice;
-        console.log("context: actualCost: %s", actualCost);
+        uint256 fee = (ethActualCharge / 10000) * w3.getNetworkFee(); 
+        uint256 price = ethActualCharge + fee;
 
-        uint256 fee = (actualCost / 10000) * w3.getNetworkFee(); 
-        console.log("network fee is %s", fee);
-
-        uint256 price = actualCost + fee;
-        console.log("price is %s", price);
-
+        // deduct fee
         w3.chargeFee(app, price);
 
-        emit FeeCharged(actualCost, fee, price);
+        emit FeeCharged(ethActualCharge, fee, price);
+
     }
 
 

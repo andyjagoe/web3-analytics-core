@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@opengsn/contracts/src/ERC2771Recipient.sol";
 
 
-import "hardhat/console.sol";
-
 
 contract Web3Analytics is ERC2771Recipient, Ownable {
     using Address for address;
@@ -235,9 +233,6 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
     function chargeFee(address app, uint256 fee) public payable {
         require(allowedPaymaster != address(0), 'Trusted paymaster must be set');
         require(allowedPaymaster == _msgSender(), 'Only trusted paymaster may charge fee');
-
-        console.log("chargeFee balance: %s", appBalances[app]);
-        console.log("chargeFee fee: %s", fee);
 
         appBalances[app] = appBalances[app] - fee;
     }

@@ -406,6 +406,10 @@ describe("Web3Analytics", function () {
     const feeInBasisPoints = 1000;
     await web3a.connect(owner).setNetworkFee(feeInBasisPoints)
 
+    // set gasUsedByPost of 16384 - calculated w/ gasleft()
+    const gasUsedByPost = 16384;
+    await web3AnalyticsPaymaster.connect(owner).setPostGasUsage(gasUsedByPost)
+
 
     // set up another opengsn transaction to make sure new network fee works
     const newAccount = ethers.Wallet.createRandom();
@@ -443,7 +447,7 @@ describe("Web3Analytics", function () {
 
     // stop GSN test environment
     await GsnTestEnvironment.stopGsn()
-    
+
   });
 
 

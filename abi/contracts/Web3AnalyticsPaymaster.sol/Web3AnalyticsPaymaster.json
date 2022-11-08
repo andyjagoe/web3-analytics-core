@@ -123,6 +123,19 @@
   },
   {
     "inputs": [],
+    "name": "gasUsedByPost",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getGasAndDataLimits",
     "outputs": [
       {
@@ -435,6 +448,19 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gasUsedByPost",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPostGasUsage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
