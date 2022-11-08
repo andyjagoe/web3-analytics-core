@@ -25,6 +25,7 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
 
     address private allowedPaymaster;
     uint256 private feeInBasisPoints;
+    uint256 private minimumAppRegBalance;
     EnumerableSet.AddressSet private registeredApps;
     mapping(address => App) private appData;
     mapping(address => uint256) private appBalances;
@@ -77,6 +78,25 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
 
     function getNetworkFee() public view returns(uint256) {
         return feeInBasisPoints;
+    }
+
+
+    /**
+    * @dev sets minimum balance required to register an app
+    * @param balance the minimum balance
+    **/
+
+    function setMinimumAppRegBalance(uint256 balance) public onlyOwner {
+        minimumAppRegBalance = balance;
+    }
+
+
+    /**
+    * @dev gets minimum balance required to register an app
+    **/
+
+    function getMinimumAppRegBalance() public view returns(uint256) {
+        return minimumAppRegBalance;
     }
 
 
@@ -170,9 +190,10 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
     * @param url the app's url (optional)
     **/
 
-    function registerApp(string memory name, string memory url) public {
+    function registerApp(string memory name, string memory url) public payable {
         require(!registeredApps.contains(_msgSender()), "App already registered");
         require(bytes(name).length != 0, "Name is required");
+        require(msg.value >= minimumAppRegBalance, "Minimum balance to register not met");
 
         registeredApps.add(_msgSender());
         appData[_msgSender()] = App(_msgSender(), name, url);                          

@@ -148,6 +148,19 @@
   },
   {
     "inputs": [],
+    "name": "getMinimumAppRegBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getNetworkFee",
     "outputs": [
       {
@@ -344,12 +357,25 @@
     ],
     "name": "registerApp",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumAppRegBalance",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

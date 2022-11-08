@@ -97,6 +97,24 @@ describe("Web3Analytics", function () {
   });
 
 
+  it("Allows setting and getting minimum balance to register app", async function () {
+    // check initial fee
+    expect (await web3Analytics.connect(addr1).getMinimumAppRegBalance())
+      .to.equal(0);
+
+    const minimumBalance = ethers.utils.parseEther("1.0");
+
+    // make sure only owner can set trusted paymaster
+    await expect(web3Analytics.connect(addr1).setMinimumAppRegBalance(minimumBalance)).
+      to.be.revertedWith('Ownable: caller is not the owner');
+      
+    // verify owner can correctly set fee in basis points
+    await web3Analytics.connect(owner).setMinimumAppRegBalance(minimumBalance)
+    expect (await web3Analytics.connect(addr1).getMinimumAppRegBalance())
+      .to.equal(minimumBalance);  
+  });
+
+
   it("Allows new app to register", async function () {
     const app = "My App";
     const url = "https://myapp.xyz";
@@ -121,6 +139,33 @@ describe("Web3Analytics", function () {
     to.be.revertedWith('Name is required');
 
   });
+
+
+  it("Allows new app to register when minimum reg fee is set", async function () {
+    const minimumBalance = ethers.utils.parseEther("1.0");
+    await web3Analytics.connect(owner).setMinimumAppRegBalance(minimumBalance)
+    
+    const app = "My App";
+    const url = "https://myapp.xyz";
+
+    // verify we can't register an app when not sending any value
+    await expect(web3Analytics.connect(addr3).registerApp(app, url)).
+    to.be.revertedWith('Minimum balance to register not met');
+
+    // verify we can't register an app when sending insufficient balance
+    await expect(web3Analytics.connect(addr3)
+    .registerApp(app, url, {value: ethers.utils.parseEther("0.9")})).
+    to.be.revertedWith('Minimum balance to register not met');
+
+    // register app with sufficient balance
+    await web3Analytics.connect(addr1)
+    .registerApp(app, url, {value: minimumBalance});
+
+    //verify app is registered
+    expect(await web3Analytics.connect(owner).isAppRegistered(addr1.address)).to.equal(true);
+
+  });
+
 
   it("Allows updating app information", async function () {
     const app = "My App";
