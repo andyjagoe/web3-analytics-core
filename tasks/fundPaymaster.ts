@@ -12,10 +12,10 @@ task("fundPaymaster", "Sends ETH to a paymaster")
     await sender.sendTransaction({
       from: sender.address,
       to: web3AnalyticsPaymaster.address, 
-      value: hre.ethers.utils.parseEther("0.1"),
+      value: hre.ethers.utils.parseEther("1.0"),
       gasLimit: 1e6
     }); 
 
-    console.log(`Transferred 0.1 ETH to ${paymaster}`);
+    console.log(`Transferred 1 ETH to ${paymaster}`);
   });
 
