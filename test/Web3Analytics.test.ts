@@ -164,6 +164,9 @@ describe("Web3Analytics", function () {
     //verify app is registered
     expect(await web3Analytics.connect(owner).isAppRegistered(addr1.address)).to.equal(true);
 
+    // verify app balance was correctly incremented
+    expect(await web3Analytics.getBalance(addr1.address)).to.equal(minimumBalance);
+
   });
 
 

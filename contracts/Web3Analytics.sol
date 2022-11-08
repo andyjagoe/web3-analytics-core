@@ -196,7 +196,8 @@ contract Web3Analytics is ERC2771Recipient, Ownable {
         require(msg.value >= minimumAppRegBalance, "Minimum balance to register not met");
 
         registeredApps.add(_msgSender());
-        appData[_msgSender()] = App(_msgSender(), name, url);                          
+        appData[_msgSender()] = App(_msgSender(), name, url);
+        if (msg.value > 0) appBalances[_msgSender()] = msg.value;
     }
 
 
