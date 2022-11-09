@@ -1,5 +1,6 @@
 import { run, ethers } from "hardhat";
 
+
 async function main() {
   await run('compile');
 
@@ -40,10 +41,30 @@ async function main() {
 
   console.log("Web3Analytics deployed to:", Web3Analytics.address);
 
+
+  // Configure main contract
+  Web3Analytics.setTrustedPaymaster(web3AnalyticsPaymaster.address);
+  //Web3Analytics.setMinimumAppRegBalance(ethers.utils.parseEther("1.0"));
+  //const feeInBasisPoints = 1000;
+  //Web3Analytics.setNetworkFee(feeInBasisPoints);
+
+
   // Configure Paymaster
   await web3AnalyticsPaymaster.setRelayHub(relayHub);
   await web3AnalyticsPaymaster.setTrustedForwarder(trustedForwarder);
   await web3AnalyticsPaymaster.setTarget(Web3Analytics.address);
+  const gasUsedByPost = 16384;
+  await web3AnalyticsPaymaster.setPostGasUsage(gasUsedByPost)
+
+  // whitelist addUser method on Paymaster
+  const did = 'did:key:zQ3shduQ4GNWTMTcbwvnF8azrxrYS1kt2FasSXtf3vHyTioMU' // dummy data
+  const ABI = [ "function addUser(string did, address app)" ];
+  const iface = new ethers.utils.Interface(ABI);
+  const web3AnalyticsEncoded = iface.encodeFunctionData("addUser", [did, ethers.provider.getSigner()]);    
+  await web3AnalyticsPaymaster.whitelistMethod(
+    Web3Analytics.address, web3AnalyticsEncoded.substring(0, 10), true
+  )
+
 
 }
 

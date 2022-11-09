@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
+import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-web3";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
@@ -26,7 +26,15 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.7",
+  solidity: {
+    version: "0.8.7",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 10,
+      },
+    },
+  },
   networks: {
     hardhat: {
       loggingEnabled: true,
@@ -36,10 +44,13 @@ const config: HardhatUserConfig = {
       chainId: 31337,
       forking: {
         url: process.env.POLYGON_URL || "",
+        //url: process.env.GOERLI_URL || "",
       }
     },
     local: {
-      url: 'http://localhost:8545'
+      url: 'http://localhost:8545',
+      gas: 2100000,
+      gasPrice: 3000000000
     },
     polygon: {
       url: process.env.POLYGON_URL || "",
@@ -67,6 +78,7 @@ const config: HardhatUserConfig = {
     currency: "USD",
     token: "MATIC",
     gasPriceApi: "https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice",
+    //gasPriceApi: "https://api.etherscan.io/api?module=proxy&action=eth_gasPrice",
     coinmarketcap: process.env.COINMARKETCAP_API_KEY
   },
   etherscan: {
