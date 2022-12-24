@@ -14,16 +14,16 @@ async function main() {
   //const relayHub = '0x6646cD15d33cE3a6933e36de38990121e8ba2806';
 
   // Goerli account addresses
-  const trustedForwarder = '0x7A95fA73250dc53556d264522150A940d4C50238';
-  const relayHub = '0x40bE32219F0F106067ba95145e8F2b3e7930b201';
+  //const trustedForwarder = '0x7A95fA73250dc53556d264522150A940d4C50238';
+  //const relayHub = '0x40bE32219F0F106067ba95145e8F2b3e7930b201';
   
   // Rinkeby account addresses
   //const trustedForwarder = '0x83A54884bE4657706785D7309cf46B58FE5f6e8a';
   //const relayHub = '0x6650d69225CA31049DB7Bd210aE4671c0B1ca132';
 
   // Hardhat account addresses
-  //const trustedForwarder = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0';
-  //const relayHub = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9';
+  const trustedForwarder = '0xBA4e44e333250bc2df36AD4B0B06A9763C12c682';
+  const relayHub = '0xa73a245DB5b8985b21E7D98732c8554a2cED1Ce5';
 
 
   // We get the contract to deploy
@@ -42,6 +42,7 @@ async function main() {
   console.log("Web3Analytics deployed to:", Web3Analytics.address);
 
 
+  /*
   // Configure main contract
   Web3Analytics.setTrustedPaymaster(web3AnalyticsPaymaster.address);
   //Web3Analytics.setMinimumAppRegBalance(ethers.utils.parseEther("1.0"));
@@ -64,7 +65,7 @@ async function main() {
   await web3AnalyticsPaymaster.whitelistMethod(
     Web3Analytics.address, web3AnalyticsEncoded.substring(0, 10), true
   )
-
+  */
 
 }
 

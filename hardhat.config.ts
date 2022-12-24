@@ -41,10 +41,10 @@ const config: HardhatUserConfig = {
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       gas: 'auto',
-      chainId: 31337,
+      chainId: 1337,
       forking: {
-        url: process.env.POLYGON_URL || "",
-        //url: process.env.GOERLI_URL || "",
+        //url: process.env.POLYGON_URL || "",
+        url: process.env.GOERLI_URL || "",
       }
     },
     local: {
