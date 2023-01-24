@@ -1,6 +1,10 @@
 {
-  "name": "hardhat-project",
-  "scripts": {
+  "name": "web3-analytics-core",
+  "description": "Smart contracts for Web3 Analytics",
+  "author": "Andy Jagoe",
+  "license": "(Apache-2.0 OR MIT)",
+  "version": "0.1.0",
+ "scripts": {
     "test-local": "hardhat --network local test test/Web3Analytics.test.ts"
   },
   "devDependencies": {
